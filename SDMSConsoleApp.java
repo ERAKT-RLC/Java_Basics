@@ -1,0 +1,579 @@
+// src/SDMSConsoleApp.java
+import java.time.LocalDate; // For Attendance date
+import java.util.ArrayList;
+import java.util.InputMismatchException; // For handling invalid input
+import java.util.List;
+import java.util.Scanner;
+
+public class SDMSConsoleApp {
+
+    // Collections to store our entities in memory
+    private static List<Student> students = new ArrayList<>();
+    private static List<Teacher> teachers = new ArrayList<>();
+    private static List<Course> courses = new ArrayList<>();
+    private static List<Attendance> attendanceRecords = new ArrayList<>();
+    private static List<Fee> feeRecords = new ArrayList<>();
+    private static List<Message> messages = new ArrayList<>();
+
+    private static Scanner scanner = new Scanner(System.in); // Scanner for user input
+
+    public static void main(String[] args) {
+        System.out.println("******************************************");
+        System.out.println("* Welcome to the Console-Based SDMS!   *");
+        System.out.println("******************************************");
+
+        // Add some initial dummy data for testing
+        addSampleData();
+
+        int choice;
+        do {
+            displayMainMenu();
+            choice = getUserChoice();
+
+            switch (choice) {
+                case 1:
+                    manageStudents();
+                    break;
+                case 2:
+                    manageTeachers();
+                    break;
+                case 3:
+                    manageCourses();
+                    break;
+                case 4:
+                    manageAttendance();
+                    break;
+                case 5:
+                    manageFees();
+                    break;
+                case 6:
+                    manageMessages();
+                    break;
+                case 0:
+                    System.out.println("Exiting SDMS. Goodbye!");
+                    break;
+                default:
+                    System.out.println("Invalid choice. Please try again.");
+            }
+            System.out.println("\nPress Enter to continue...");
+            scanner.nextLine(); // Consume newline after user choice and wait for Enter
+        } while (choice != 0);
+
+        scanner.close(); // Close the scanner when done
+    }
+
+    // --- Main Menu and Utility Methods ---
+
+    private static void displayMainMenu() {
+        System.out.println("\n--- Main Menu ---");
+        System.out.println("1. Manage Students");
+        System.out.println("2. Manage Teachers");
+        System.out.println("3. Manage Courses");
+        System.out.println("4. Manage Attendance");
+        System.out.println("5. Manage Fees");
+        System.out.println("6. Manage Messages");
+        System.out.println("0. Exit");
+        System.out.print("Enter your choice: ");
+    }
+
+    private static int getUserChoice() {
+        while (true) {
+            try {
+                return scanner.nextInt();
+            } catch (InputMismatchException e) {
+                System.out.println("Invalid input. Please enter a number.");
+                scanner.nextLine(); // Consume the invalid input
+            } finally {
+                scanner.nextLine(); // Consume the leftover newline character
+            }
+        }
+    }
+
+    // --- Sample Data (for testing) ---
+    private static void addSampleData() {
+        students.add(new Student("S001", "Alice Smith", "alice@example.com", "pass123", "C101", "Paid"));
+        students.add(new Student("S002", "Bob Johnson", "bob@example.com", "pass456", "C102", "Due"));
+
+        teachers.add(new Teacher("T001", "Mr. David Lee", "david@example.com", "teachpass"));
+        teachers.add(new Teacher("T002", "Ms. Emily White", "emily@example.com", "eduadmin"));
+
+        courses.add(new Course("C101", "Introduction to Programming", "T001"));
+        courses.add(new Course("C102", "Data Structures", "T001"));
+        courses.add(new Course("C103", "Web Development", "T002"));
+
+        attendanceRecords.add(new Attendance("A001", "S001", LocalDate.of(2025, 8, 15), "Present"));
+        attendanceRecords.add(new Attendance("A002", "S002", LocalDate.of(2025, 8, 15), "Absent"));
+
+        feeRecords.add(new Fee("F001", "S001", 1500.0, "Paid", "TXN12345"));
+        feeRecords.add(new Fee("F002", "S002", 1500.0, "Due", "N/A"));
+
+        messages.add(new Message("M001", "S001", "T001", "Question about assignment.", System.currentTimeMillis()));
+        messages.add(new Message("M002", "T001", "S001", "Please check the portal for details.", System.currentTimeMillis()));
+
+        System.out.println("Sample data loaded.");
+    }
+
+    // --- Student Management ---
+    private static void manageStudents() {
+        int choice;
+        do {
+            System.out.println("\n--- Student Management ---");
+            System.out.println("1. Add New Student");
+            System.out.println("2. View All Students");
+            System.out.println("3. Update Student Info");
+            System.out.println("4. Delete Student");
+            System.out.println("0. Back to Main Menu");
+            System.out.print("Enter your choice: ");
+            choice = getUserChoice();
+
+            switch (choice) {
+                case 1:
+                    addStudent();
+                    break;
+                case 2:
+                    viewAllStudents();
+                    break;
+                case 3:
+                    updateStudent();
+                    break;
+                case 4:
+                    deleteStudent();
+                    break;
+                case 0:
+                    System.out.println("Returning to Main Menu...");
+                    break;
+                default:
+                    System.out.println("Invalid choice. Please try again.");
+            }
+        } while (choice != 0);
+    }
+
+    private static void addStudent() {
+        System.out.print("Enter Student ID: ");
+        String id = scanner.nextLine();
+        System.out.print("Enter Name: ");
+        String name = scanner.nextLine();
+        System.out.print("Enter Email: ");
+        String email = scanner.nextLine();
+        System.out.print("Enter Password: ");
+        String password = scanner.nextLine();
+        System.out.print("Enter Course ID (e.g., C101): ");
+        String courseId = scanner.nextLine();
+        System.out.print("Enter Fee Status (Paid/Due): ");
+        String feeStatus = scanner.nextLine();
+
+        students.add(new Student(id, name, email, password, courseId, feeStatus));
+        System.out.println("Student added successfully!");
+    }
+
+    private static void viewAllStudents() {
+        if (students.isEmpty()) {
+            System.out.println("No students registered.");
+            return;
+        }
+        System.out.println("\n--- All Students ---");
+        for (Student s : students) {
+            System.out.println(s);
+        }
+    }
+
+    private static void updateStudent() {
+        System.out.print("Enter Student ID to update: ");
+        String idToUpdate = scanner.nextLine();
+        Student foundStudent = null;
+        for (Student s : students) {
+            if (s.getStudentId().equals(idToUpdate)) {
+                foundStudent = s;
+                break;
+            }
+        }
+
+        if (foundStudent != null) {
+            System.out.println("Student found: " + foundStudent.getName());
+            System.out.print("Enter new Name (or press Enter to keep current): ");
+            String newName = scanner.nextLine();
+            if (!newName.isEmpty()) {
+                foundStudent.setName(newName);
+            }
+            System.out.print("Enter new Email (or press Enter to keep current): ");
+            String newEmail = scanner.nextLine();
+            if (!newEmail.isEmpty()) {
+                foundStudent.setEmail(newEmail);
+            }
+            System.out.print("Enter new Fee Status (or press Enter to keep current): ");
+            String newFeeStatus = scanner.nextLine();
+            if (!newFeeStatus.isEmpty()) {
+                foundStudent.setFeeStatus(newFeeStatus);
+            }
+            System.out.println("Student updated successfully!");
+        } else {
+            System.out.println("Student with ID " + idToUpdate + " not found.");
+        }
+    }
+
+    private static void deleteStudent() {
+        System.out.print("Enter Student ID to delete: ");
+        String idToDelete = scanner.nextLine();
+        boolean removed = students.removeIf(s -> s.getStudentId().equals(idToDelete));
+        if (removed) {
+            System.out.println("Student with ID " + idToDelete + " deleted successfully.");
+        } else {
+            System.out.println("Student with ID " + idToDelete + " not found.");
+        }
+    }
+
+    // --- Teacher Management (Similar structure to Student management) ---
+    private static void manageTeachers() {
+        int choice;
+        do {
+            System.out.println("\n--- Teacher Management ---");
+            System.out.println("1. Add New Teacher");
+            System.out.println("2. View All Teachers");
+            System.out.println("3. Update Teacher Info");
+            System.out.println("4. Delete Teacher");
+            System.out.println("0. Back to Main Menu");
+            System.out.print("Enter your choice: ");
+            choice = getUserChoice();
+
+            switch (choice) {
+                case 1:
+                    addTeacher();
+                    break;
+                case 2:
+                    viewAllTeachers();
+                    break;
+                case 3:
+                    updateTeacher();
+                    break;
+                case 4:
+                    deleteTeacher();
+                    break;
+                case 0:
+                    System.out.println("Returning to Main Menu...");
+                    break;
+                default:
+                    System.out.println("Invalid choice. Please try again.");
+            }
+        } while (choice != 0);
+    }
+
+    private static void addTeacher() {
+        System.out.print("Enter Teacher ID: ");
+        String id = scanner.nextLine();
+        System.out.print("Enter Name: ");
+        String name = scanner.nextLine();
+        System.out.print("Enter Email: ");
+        String email = scanner.nextLine();
+        System.out.print("Enter Password: ");
+        String password = scanner.nextLine();
+        teachers.add(new Teacher(id, name, email, password));
+        System.out.println("Teacher added successfully!");
+    }
+
+    private static void viewAllTeachers() {
+        if (teachers.isEmpty()) {
+            System.out.println("No teachers registered.");
+            return;
+        }
+        System.out.println("\n--- All Teachers ---");
+        for (Teacher t : teachers) {
+            System.out.println(t);
+        }
+    }
+
+    private static void updateTeacher() {
+        System.out.print("Enter Teacher ID to update: ");
+        String idToUpdate = scanner.nextLine();
+        Teacher foundTeacher = null;
+        for (Teacher t : teachers) {
+            if (t.getTeacherId().equals(idToUpdate)) {
+                foundTeacher = t;
+                break;
+            }
+        }
+
+        if (foundTeacher != null) {
+            System.out.println("Teacher found: " + foundTeacher.getName());
+            System.out.print("Enter new Name (or press Enter to keep current): ");
+            String newName = scanner.nextLine();
+            if (!newName.isEmpty()) {
+                foundTeacher.setName(newName);
+            }
+            System.out.print("Enter new Email (or press Enter to keep current): ");
+            String newEmail = scanner.nextLine();
+            if (!newEmail.isEmpty()) {
+                foundTeacher.setEmail(newEmail);
+            }
+            System.out.println("Teacher updated successfully!");
+        } else {
+            System.out.println("Teacher with ID " + idToUpdate + " not found.");
+        }
+    }
+
+    private static void deleteTeacher() {
+        System.out.print("Enter Teacher ID to delete: ");
+        String idToDelete = scanner.nextLine();
+        boolean removed = teachers.removeIf(t -> t.getTeacherId().equals(idToDelete));
+        if (removed) {
+            System.out.println("Teacher with ID " + idToDelete + " deleted successfully.");
+        } else {
+            System.out.println("Teacher with ID " + idToDelete + " not found.");
+        }
+    }
+
+    // --- Course Management ---
+    private static void manageCourses() {
+        int choice;
+        do {
+            System.out.println("\n--- Course Management ---");
+            System.out.println("1. Add New Course");
+            System.out.println("2. View All Courses");
+            System.out.println("3. Update Course Info");
+            System.out.println("4. Delete Course");
+            System.out.println("0. Back to Main Menu");
+            System.out.print("Enter your choice: ");
+            choice = getUserChoice();
+
+            switch (choice) {
+                case 1:
+                    addCourse();
+                    break;
+                case 2:
+                    viewAllCourses();
+                    break;
+                case 3:
+                    updateCourse();
+                    break;
+                case 4:
+                    deleteCourse();
+                    break;
+                case 0:
+                    System.out.println("Returning to Main Menu...");
+                    break;
+                default:
+                    System.out.println("Invalid choice. Please try again.");
+            }
+        } while (choice != 0);
+    }
+
+    private static void addCourse() {
+        System.out.print("Enter Course ID: ");
+        String id = scanner.nextLine();
+        System.out.print("Enter Course Name: ");
+        String name = scanner.nextLine();
+        System.out.print("Enter Teacher ID for this course: ");
+        String teacherId = scanner.nextLine();
+        courses.add(new Course(id, name, teacherId));
+        System.out.println("Course added successfully!");
+    }
+
+    private static void viewAllCourses() {
+        if (courses.isEmpty()) {
+            System.out.println("No courses available.");
+            return;
+        }
+        System.out.println("\n--- All Courses ---");
+        for (Course c : courses) {
+            System.out.println(c);
+        }
+    }
+
+    private static void updateCourse() {
+        System.out.print("Enter Course ID to update: ");
+        String idToUpdate = scanner.nextLine();
+        Course foundCourse = null;
+        for (Course c : courses) {
+            if (c.getCourseId().equals(idToUpdate)) {
+                foundCourse = c;
+                break;
+            }
+        }
+
+        if (foundCourse != null) {
+            System.out.println("Course found: " + foundCourse.getName());
+            System.out.print("Enter new Course Name (or press Enter to keep current): ");
+            String newName = scanner.nextLine();
+            if (!newName.isEmpty()) {
+                foundCourse.setName(newName);
+            }
+            System.out.print("Enter new Teacher ID (or press Enter to keep current): ");
+            String newTeacherId = scanner.nextLine();
+            if (!newTeacherId.isEmpty()) {
+                foundCourse.setTeacherId(newTeacherId);
+            }
+            System.out.println("Course updated successfully!");
+        } else {
+            System.out.println("Course with ID " + idToUpdate + " not found.");
+        }
+    }
+
+    private static void deleteCourse() {
+        System.out.print("Enter Course ID to delete: ");
+        String idToDelete = scanner.nextLine();
+        boolean removed = courses.removeIf(c -> c.getCourseId().equals(idToDelete));
+        if (removed) {
+            System.out.println("Course with ID " + idToDelete + " deleted successfully.");
+        } else {
+            System.out.println("Course with ID " + idToDelete + " not found.");
+        }
+    }
+
+    // --- Attendance Management ---
+    private static void manageAttendance() {
+        int choice;
+        do {
+            System.out.println("\n--- Attendance Management ---");
+            System.out.println("1. Mark New Attendance");
+            System.out.println("2. View All Attendance Records");
+            System.out.println("0. Back to Main Menu");
+            System.out.print("Enter your choice: ");
+            choice = getUserChoice();
+
+            switch (choice) {
+                case 1:
+                    markAttendance();
+                    break;
+                case 2:
+                    viewAllAttendanceRecords();
+                    break;
+                case 0:
+                    System.out.println("Returning to Main Menu...");
+                    break;
+                default:
+                    System.out.println("Invalid choice. Please try again.");
+            }
+        } while (choice != 0);
+    }
+
+    private static void markAttendance() {
+        System.out.print("Enter Attendance ID: ");
+        String id = scanner.nextLine();
+        System.out.print("Enter Student ID: ");
+        String studentId = scanner.nextLine();
+        System.out.print("Enter Date (YYYY-MM-DD): ");
+        LocalDate date = LocalDate.parse(scanner.nextLine()); // Simple parsing, add error handling later
+        System.out.print("Enter Status (Present/Absent/Late): ");
+        String status = scanner.nextLine();
+
+        attendanceRecords.add(new Attendance(id, studentId, date, status));
+        System.out.println("Attendance marked successfully!");
+    }
+
+    private static void viewAllAttendanceRecords() {
+        if (attendanceRecords.isEmpty()) {
+            System.out.println("No attendance records found.");
+            return;
+        }
+        System.out.println("\n--- All Attendance Records ---");
+        for (Attendance a : attendanceRecords) {
+            System.out.println(a);
+        }
+    }
+
+    // --- Fee Management ---
+    private static void manageFees() {
+        int choice;
+        do {
+            System.out.println("\n--- Fee Management ---");
+            System.out.println("1. Record New Fee Payment");
+            System.out.println("2. View All Fee Records");
+            System.out.println("0. Back to Main Menu");
+            System.out.print("Enter your choice: ");
+            choice = getUserChoice();
+
+            switch (choice) {
+                case 1:
+                    recordFeePayment();
+                    break;
+                case 2:
+                    viewAllFeeRecords();
+                    break;
+                case 0:
+                    System.out.println("Returning to Main Menu...");
+                    break;
+                default:
+                    System.out.println("Invalid choice. Please try again.");
+            }
+        } while (choice != 0);
+    }
+
+    private static void recordFeePayment() {
+        System.out.print("Enter Fee ID: ");
+        String id = scanner.nextLine();
+        System.out.print("Enter Student ID: ");
+        String studentId = scanner.nextLine();
+        System.out.print("Enter Amount: ");
+        double amount = scanner.nextDouble();
+        scanner.nextLine(); // Consume newline
+        System.out.print("Enter Status (Paid/Due/Overdue): ");
+        String status = scanner.nextLine();
+        System.out.print("Enter Transaction ID (or N/A): ");
+        String transactionId = scanner.nextLine();
+
+        feeRecords.add(new Fee(id, studentId, amount, status, transactionId));
+        System.out.println("Fee payment recorded successfully!");
+    }
+
+    private static void viewAllFeeRecords() {
+        if (feeRecords.isEmpty()) {
+            System.out.println("No fee records found.");
+            return;
+        }
+        System.out.println("\n--- All Fee Records ---");
+        for (Fee f : feeRecords) {
+            System.out.println(f);
+        }
+    }
+
+    // --- Message Management ---
+    private static void manageMessages() {
+        int choice;
+        do {
+            System.out.println("\n--- Message Management ---");
+            System.out.println("1. Send New Message");
+            System.out.println("2. View All Messages");
+            System.out.println("0. Back to Main Menu");
+            System.out.print("Enter your choice: ");
+            choice = getUserChoice();
+
+            switch (choice) {
+                case 1:
+                    sendMessage();
+                    break;
+                case 2:
+                    viewAllMessages();
+                    break;
+                case 0:
+                    System.out.println("Returning to Main Menu...");
+                    break;
+                default:
+                    System.out.println("Invalid choice. Please try again.");
+            }
+        } while (choice != 0);
+    }
+
+    private static void sendMessage() {
+        System.out.print("Enter Message ID: ");
+        String id = scanner.nextLine();
+        System.out.print("Enter Sender ID (Student/Teacher ID): ");
+        String senderId = scanner.nextLine();
+        System.out.print("Enter Receiver ID (Student/Teacher ID or Group ID): ");
+        String receiverId = scanner.nextLine();
+        System.out.print("Enter Message Content: ");
+        String content = scanner.nextLine();
+
+        messages.add(new Message(id, senderId, receiverId, content, System.currentTimeMillis()));
+        System.out.println("Message sent successfully!");
+    }
+
+    private static void viewAllMessages() {
+        if (messages.isEmpty()) {
+            System.out.println("No messages found.");
+            return;
+        }
+        System.out.println("\n--- All Messages ---");
+        for (Message m : messages) {
+            System.out.println(m);
+        }
+    }
+}
